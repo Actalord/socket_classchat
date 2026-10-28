@@ -1,0 +1,6 @@
+# Python cache files
+__pycache__/
+*.pyc
+
+# Course instructions (not my work)
+*.pdf
