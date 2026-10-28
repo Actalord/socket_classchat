@@ -16,6 +16,7 @@ ack = user.recv(1024).decode("utf-8", errors="replace")  #AI Debug/ special char
 print(ack)
 
 print("Type your messages (type 'exit' to quit):")
+print("You>> ", end="", flush=True)  #AI Debug/ prompt
 
 while True:
     #wait untill keyboard or socket is ready
@@ -24,17 +25,26 @@ while True:
     #a message arrived from the server
     if user in ready:
         servreply = user.recv(1024).decode("utf-8", errors="replace")  #AI Debug/ special characters
-        if not servreply:
+        if servreply == "exit" or not servreply :
+            print("\r", end="")
+            print("Server left the chat.")
             break
+        print("\r", end="")
         print(f"Server>>{servreply}")
+        print("You>> ", end="", flush=True)
 
     #the user typed a line
     if sys.stdin in ready:
-        client_keyboard = sys.stdin.readline().strip() 
+        line = sys.stdin.readline()
+        if line == "":
+            break
+        client_keyboard = line.strip()
         if not client_keyboard:
+            print("You>> ", end="", flush=True)
             continue
         user.send(client_keyboard.encode("utf-8", errors="replace"))  #AI Debug/ special characters
         if client_keyboard == "exit":
             break
+        print("You>> ", end="", flush=True)
 
 user.close()
