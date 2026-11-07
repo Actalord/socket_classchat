@@ -17,10 +17,15 @@ server.bind((HOST, PORT))
 server.listen(5)
 print(f"Server is listening on port {PORT}")
 
-#client socket -> client address
+#variable sockets clients names groups
 sockets_list = [server, sys.stdin]
 clients = {}
 names = {}
+
+#groups and set of numbers
+groups = {}
+def send_json(s, d):
+    s.send((json.dumps(d) + "\n").encode("utf-8", errors="replace"))
 
 print("Type a message to send it to all clients (type 'exit' to stop the server):")
 print("You>> ", end="", flush=True)
@@ -48,8 +53,7 @@ while running:
                     if c is not conn:
                         info = {"status": "info", "sender": "Server", "receiver": clients[c], "text": f"{username} joined the chat"}
                         c.send((json.dumps(info) + "\n").encode("utf-8", errors="replace"))
-                        
-            conn.send("Connected to ClassChat".encode())
+
             print("\r", end="")
             print(f"{username} is connected")
             print("You>> ", end="", flush=True)
@@ -93,6 +97,40 @@ while running:
                         msg = json.loads(msg)
                     except ValueError:
                         continue
+
+                    #Create a group
+                    if msg["status"] == "create":
+                        group = msg["receiver"].lower()
+                        members = {m.lower().lstrip("@") for m in msg["text"].split()}
+                        members.add(msg["sender"].lower())
+                        
+                        #AI Debug/ group chat: every member must be online
+                        unknown = [m for m in members if m not in names]
+                        if unknown:
+                            send_json(sock, {"status": "error", "sender": "Server", "receiver": msg["sender"], "text": f"{', '.join(unknown)} not online, group not created"})
+                            continue
+                        
+                        groups[group] = members
+                        for m in members:
+                            if m in names:
+                                send_json(names[m], {"status": "info", "sender": "Server", "receiver": m, "text": f"{msg['sender']} created group #{group} with {', '.join(sorted(members))}"})
+                        print(f"{msg['sender']} created group #{group}: {', '.join(sorted(members))}")
+                        continue
+
+                    #Message to a group
+                    if msg["status"] == "group":
+                        group = msg["receiver"].lower()
+                        if group not in groups:
+                            send_json(sock, {"status": "error", "sender": "Server", "receiver": msg["sender"], "text": f"group #{group} does not exist"})
+                        elif msg["sender"].lower() not in groups[group]:
+                            send_json(sock, {"status": "error", "sender": "Server", "receiver": msg["sender"], "text": f"you are not in group #{group}"})
+                        else:
+                            for m in groups[group]:
+                                if m in names and m != msg["sender"].lower():
+                                    send_json(names[m], msg)
+                            print(f"{msg['sender']} -> #{group}: {msg['text']}")
+                        continue
+
                     receiver = msg["receiver"]
 
                     if receiver.lower() in names:

@@ -20,6 +20,8 @@ print(ack)
 
 print("Type your messages (type 'exit' to quit):")
 print("Format: @<name> <message>")
+print("Group: /create <group> @<member1> @<member2>...")
+print("Text Group: #<group> <message>")
 print("You>> ", end="", flush=True)
 
 while True:
@@ -45,6 +47,8 @@ while True:
                 continue
             if msg["status"] == "error":
                 print(f"Error>>{msg['text']}")
+            elif msg["status"] == "group":  #Group chat
+                print(f"[#{msg['receiver']}] {msg['sender']}>>{msg['text']}")
             else:
                 print(f"{msg['sender']}>>{msg['text']}")
         print("You>> ", end="", flush=True)
@@ -61,6 +65,28 @@ while True:
         if client_keyboard == "exit":
             user.send(client_keyboard.encode("utf-8", errors="replace"))  #AI Debug/ special characters
             break
+
+                #AI Debug/ group chat: /create <group> <members...>
+        if client_keyboard.startswith("/create"):
+            parts = client_keyboard.split(" ", 2)
+            if len(parts) < 3:
+                print("Format: /create <group> <member1> <member2> ...")
+            else:
+                msg = {"status": "create", "sender": username, "receiver": parts[1], "text": parts[2]}
+                user.send((json.dumps(msg) + "\n").encode("utf-8", errors="replace"))
+            print("You>> ", end="", flush=True)
+            continue
+
+        #group chat: #<group> <message>
+        if client_keyboard.startswith("#"):
+            parts = client_keyboard.split(" ", 1)
+            if len(parts) < 2:
+                print("Format: #<group> <message>")
+            else:
+                msg = {"status": "group", "sender": username, "receiver": parts[0][1:], "text": parts[1]}
+                user.send((json.dumps(msg) + "\n").encode("utf-8", errors="replace"))
+            print("You>> ", end="", flush=True)
+            continue
         
         #JSON format 
         parts = client_keyboard.split(" ", 1)
