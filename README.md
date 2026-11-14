@@ -16,6 +16,9 @@ A central server relays messages between clients (private messages, group chats,
 
 - `server.py` : the ClassChat server
 - `client.py` : the ClassChat client
+- `Archive/` : code of parts 1, 2 and 3
+- `Technical_Report.md` / `Technical_Report.pdf` : technical report with screenshots
+- `screenshots/` : demo screenshots for each part
 
 ## How to run
 
