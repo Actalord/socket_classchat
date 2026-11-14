@@ -1,7 +1,7 @@
 # ClassChat
 
-A command-line chat application in Python using TCP sockets.
-A central server relays messages between clients: private messages, group chats and server broadcasts.
+Command-line chat application in Python using TCP sockets.
+A central server relays messages between clients (private messages, group chats, server broadcasts...)
 
 ## Requirements
 
